@@ -1,1 +1,32 @@
 Hello World!
+
+<input type="file" id="upload" accept="image/jpeg, image/png">
+<canvas id="canvas"></canvas>
+<a id="downloadLink" download="converted-image.png">Download Converted Image</a>
+
+<script>
+document.getElementById('upload').addEventListener('change', handleImageUpload);
+
+function handleImageUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.drawImage(img, 0, 0);
+            const dataURL = canvas.toDataURL('image/png');
+            const downloadLink = document.getElementById('downloadLink');
+            downloadLink.href = dataURL;
+        };
+        img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+}
+</script>
+
