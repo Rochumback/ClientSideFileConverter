@@ -4,4 +4,4 @@ Hopefully this will utilize WASM.
 
 # External libraries
 
-- [Image library] (https://github.com/Rochumback/wasm-image-conversion)
+- [Image library](https://github.com/Rochumback/wasm-image-conversion)
