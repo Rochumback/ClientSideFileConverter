@@ -1,63 +1,90 @@
 <!DOCTYPE html>
 <html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>File converter</title>
+    <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+    <h1>Hello World!</h1>
+    <script>
+        document.addEventListener("DOMContentLoaded", _ => sessionStorage.clear())
+    </script>
+    <input type="file" id="upload" accept="image/jpeg, image/png" multiple="multiple">
+    <form>
+        <label for="formats">Choose image format:</label>
+        <select id="formats">
+            <option value="image_to_png">PNG</option>
+            <option value="image_to_jpeg">JPG/JPEG</option>
+            <option value="image_to_avif">AVIF</option>
+            <option value="image_to_webp">WEBP</option>
+        </select>
+        <button type="button" onclick="upload()">Submit</button>
+    </form>
+    <a id="image-field">
+        <div>
+            <button type="button" onclick="previousImage()"> previous </button>
+            <button type="button" onclick="nextImage()">next</button>
+        </div>
+        <p style="display:inline" id="current-image">0</p>
+        <p style="display:inline">/</p>
+        <p style="display:inline" id="total-images">0</p>
+    </a>
+    <a id="image-url">
+        <image id="preview" src="">
+    </a>
 
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>File converter</title>
-        <link href="css/style.css" rel="stylesheet">
-    </head>
+    <a id="downloadLink" download="converted-image.png">Download Converted Image</a>
+    <script>
+        function upload() {
+            document.handleImageUpload()
+        }
+        function nextImage() {
+            console.log("nextImage")
+            changeImage(1)
+        }
+        function previousImage() {
+            console.log("previousImage")
+            changeImage(-1)
+        }
 
-    <body>
-        <h1>Hello World!</h1>
+        function changeImage(offset) {
 
-        <script type="module">
-            import * as wasm from "./pkg/image_wasm.js";
-        import init from "./pkg/image_wasm.js";
+            let imagePreview = document.getElementById("preview");
+            let imageUrl = document.getElementById("image-url");
+            let images = JSON.parse(sessionStorage.getItem("images"));
+            let current = document.getElementById("current-image");
+            let total = document.getElementById("total-images");
 
-        init()
-        console.log(wasm.get_preview)
-        document.wasm = wasm;
-        </script>
+            const newIndex = Number(current.textContent) + offset;
+            if (!(0 < newIndex < total.textContent)) return;
+            current.textContent = newIndex;
+            console.log(images[newIndex - 1])
+            imagePreview.src = images[newIndex - 1].url;
+            imageUrl.href = images[newIndex - 1].url;
+        }
+    </script>
+    <script type="module">
+        import ImageThreadpool from "./image_threadpool.js";
+        
+        document.imageThreadpool = new ImageThreadpool();
 
-
-        <input type="file" id="upload" accept="image/jpeg, image/png" multiple="multiple">
-        <image id="image" src="">
-        <image>
-
-        <form>
-            <label for="formats">Choose image format:</label>
-            <select id="formats">
-                <option value="image_to_png">PNG</option>
-                <option value="image_to_jpg">JPG</option>
-                <option value="image_to_avif">AVIF</option>
-                <option value="image_to_webp">WEBP</option>
-            </select>
-            <button type="button" onclick="handleImageUpload()">Submit</button>
-        </form>
-
-        <a id="downloadLink" download="converted-image.png">Download Converted Image</a>
-
-        <script>
-            async function convertImage(event) {
-                const format = document.getElementById("formats").selectedOptions[0].value;
-                const image = document.wasm[format](new Uint8Array(event.target.result))
-                const blob = new Blob([image], {type: "image/png"});
-                const imageURL = URL.createObjectURL(blob);
-                const urls = sessionStorage.getItem("images")?.split(",") || [];
-                sessionStorage.setItem("images", urls.concat(imageURL))
-            }
-            function handleImageUpload() {
-                const files = document.getElementById("upload").files
-                if (!files) return;
-                for (const file of files) {
-                    const reader = new FileReader();
-                    reader.onload = convertImage
-                    reader.readAsArrayBuffer(file);
+        function handleImageUpload() {
+            const files = document.getElementById("upload").files
+            if (!files) return;
+            for (const file of files) {
+                const reader = new FileReader();
+                reader.onload = function (event) {
+                    const format = document.getElementById("formats").selectedOptions[0].value;
+                    document.imageThreadpool.addTask({file: file, newFormat: format})
                 }
+                file.bytes().then(console.log)
+                reader.readAsArrayBuffer(file);
             }
-        </script>
+        }
 
-    </body>
-
+        document.handleImageUpload = handleImageUpload
+    </script>
+</body>
 </html>
