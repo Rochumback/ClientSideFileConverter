@@ -79,7 +79,6 @@
                     const format = document.getElementById("formats").selectedOptions[0].value;
                     document.imageThreadpool.addTask({file: file, newFormat: format})
                 }
-                file.bytes().then(console.log)
                 reader.readAsArrayBuffer(file);
             }
         }

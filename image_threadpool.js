@@ -43,8 +43,6 @@ export class ImageThreadpool {
             const worker = new Worker("./worker.js", { type: "module" });
             worker.onerror = console.error;
             worker.onmessage = function(message) {
-                console.log(message)
-                console.log(message.data.filename, message.data.imageURL)
                 const images = JSON.parse(sessionStorage.getItem("images")) || [];
                 const total = document.getElementById("total-images");
                 images.push({ filename: message.data.filename, url: message.data.imageURL })
@@ -64,7 +62,6 @@ export class ImageThreadpool {
     addTask(file) {
         const task = new Task(file);
         this.tasks.push(task);
-        console.log(task)
         this.start()
     }
     async start() {
@@ -75,7 +72,6 @@ export class ImageThreadpool {
             if (!task) return;
 
             const worker = this.workers.next();
-            console.log(worker)
             worker.postMessage({ filename: task.name, newFormat: task.newFormat, bytes: await task.bytes })
         }
         this.running = false;
