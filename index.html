@@ -7,7 +7,7 @@
     <link href="css/style.css" rel="stylesheet">
 </head>
 <body>
-    <h1>Hello World!</h1>
+    <h1>ClientSideFileConverter</h1>
     <script>
         document.addEventListener("DOMContentLoaded", _ => sessionStorage.clear())
     </script>
@@ -41,11 +41,9 @@
             document.handleImageUpload()
         }
         function nextImage() {
-            console.log("nextImage")
             changeImage(1)
         }
         function previousImage() {
-            console.log("previousImage")
             changeImage(-1)
         }
 
@@ -58,9 +56,8 @@
             let total = document.getElementById("total-images");
 
             const newIndex = Number(current.textContent) + offset;
-            if (!(0 < newIndex < total.textContent)) return;
+            if (!(0 < newIndex && newIndex <= total.textContent)) return;
             current.textContent = newIndex;
-            console.log(images[newIndex - 1])
             imagePreview.src = images[newIndex - 1].url;
             imageUrl.href = images[newIndex - 1].url;
         }

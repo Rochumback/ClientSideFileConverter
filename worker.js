@@ -1,10 +1,7 @@
 import * as wasm from "./pkg/image_wasm.js";
 import init from "./pkg/image_wasm.js";
 
-init().then((owo) => {
-    console.table("owo:", owo);
-    console.table("wasm:", wasm)
-})
+init()
 /**
     * @param {{ data: { bytes: Uint8Array, newFormat:string, filename:string } }
     * */
