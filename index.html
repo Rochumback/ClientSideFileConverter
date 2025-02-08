@@ -1,63 +1,63 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>File converter</title>
-    <link href="css/style.css" rel="stylesheet">
-</head>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>File converter</title>
+        <link href="css/style.css" rel="stylesheet">
+    </head>
 
-<body>
-    <h1>Hello World!</h1>
+    <body>
+        <h1>Hello World!</h1>
 
-    <script type="module">
-        import * as wasm from "./pkg/image_wasm.js";
+        <script type="module">
+            import * as wasm from "./pkg/image_wasm.js";
         import init from "./pkg/image_wasm.js";
 
         init()
         console.log(wasm.get_preview)
         document.wasm = wasm;
-    </script>
+        </script>
 
 
-    <input type="file" id="upload" accept="image/jpeg, image/png" multiple="multiple">
-    <image id="image" src="">
+        <input type="file" id="upload" accept="image/jpeg, image/png" multiple="multiple">
+        <image id="image" src="">
         <image>
 
-            <form>
-                <label for="formats">Choose iamge format:</label>
-                <select id="formats">
-                    <option value="image_to_png">PNG</option>
-                    <option value="image_to_jpg">JPG</option>
-                    <option value="image_to_avif">AVIF</option>
-                    <option value="image_to_webp">WEBP</option>
-                </select>
-                <button type="button" onclick="handleImageUpload()">Submit</button>
-            </form>
+        <form>
+            <label for="formats">Choose image format:</label>
+            <select id="formats">
+                <option value="image_to_png">PNG</option>
+                <option value="image_to_jpg">JPG</option>
+                <option value="image_to_avif">AVIF</option>
+                <option value="image_to_webp">WEBP</option>
+            </select>
+            <button type="button" onclick="handleImageUpload()">Submit</button>
+        </form>
 
-            <a id="downloadLink" download="converted-image.png">Download Converted Image</a>
+        <a id="downloadLink" download="converted-image.png">Download Converted Image</a>
 
-            <script>
-                async function convertImage(event) {
-                    const format = document.getElementById("formats").selectedOptions[0].value;
-                    const image = document.wasm[format](new Uint8Array(event.target.result))
-                    const blob = new Blob([image], {type: "image/png"});
-                    const imageURL = URL.createObjectURL(blob);
-                    const urls = sessionStorage.getItem("images")?.split(",") || [];
-                    sessionStorage.setItem("images", urls.concat(imageURL))
+        <script>
+            async function convertImage(event) {
+                const format = document.getElementById("formats").selectedOptions[0].value;
+                const image = document.wasm[format](new Uint8Array(event.target.result))
+                const blob = new Blob([image], {type: "image/png"});
+                const imageURL = URL.createObjectURL(blob);
+                const urls = sessionStorage.getItem("images")?.split(",") || [];
+                sessionStorage.setItem("images", urls.concat(imageURL))
+            }
+            function handleImageUpload() {
+                const files = document.getElementById("upload").files
+                if (!files) return;
+                for (const file of files) {
+                    const reader = new FileReader();
+                    reader.onload = convertImage
+                    reader.readAsArrayBuffer(file);
                 }
-                function handleImageUpload() {
-                    const files = document.getElementById("upload").files
-                    if (!files) return;
-                    for (const file of files) {
-                        const reader = new FileReader();
-                        reader.onload = convertImage
-                        reader.readAsArrayBuffer(file);
-                    }
-                }
-            </script>
+            }
+        </script>
 
-</body>
+    </body>
 
 </html>
