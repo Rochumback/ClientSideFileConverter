@@ -4,7 +4,7 @@ class Task {
         * */
     constructor({ file, newFormat }) {
         this.name = file.name;
-        this.bytes = file.bytes();
+        this.bytes = file.arrayBuffer().then(buffer => new Uint8Array(buffer))
         this.newFormat = newFormat;
     }
 }
@@ -72,7 +72,7 @@ export class ImageThreadpool {
             if (!task) return;
 
             const worker = this.workers.next();
-            worker.postMessage({ filename: task.name, newFormat: task.newFormat, bytes: await task.bytes })
+            worker.postMessage({ filename: task.name, newFormat: task.newFormat, bytes:await  task.bytes })
         }
         this.running = false;
     }
