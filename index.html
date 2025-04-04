@@ -1,32 +1,86 @@
-Hello World!
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>File converter</title>
+    <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+    <h1>ClientSideFileConverter</h1>
+    <script>
+        document.addEventListener("DOMContentLoaded", _ => sessionStorage.clear())
+    </script>
+    <input type="file" id="upload" accept="image/jpeg, image/png" multiple="multiple">
+    <form>
+        <label for="formats">Choose image format:</label>
+        <select id="formats">
+            <option value="image_to_png">PNG</option>
+            <option value="image_to_jpeg">JPG/JPEG</option>
+            <option value="image_to_avif">AVIF</option>
+            <option value="image_to_webp">WEBP</option>
+        </select>
+        <button type="button" onclick="upload()">Submit</button>
+    </form>
+    <a id="image-field">
+        <div>
+            <button type="button" onclick="previousImage()"> previous </button>
+            <button type="button" onclick="nextImage()">next</button>
+        </div>
+        <p style="display:inline" id="current-image">0</p>
+        <p style="display:inline">/</p>
+        <p style="display:inline" id="total-images">0</p>
+    </a>
+    <a id="image-url">
+        <image id="preview" src="">
+    </a>
 
-<input type="file" id="upload" accept="image/jpeg, image/png">
-<canvas id="canvas"></canvas>
-<a id="downloadLink" download="converted-image.png">Download Converted Image</a>
+    <a id="downloadLink" download="converted-image.png">Download Converted Image</a>
+    <script>
+        function upload() {
+            document.handleImageUpload()
+        }
+        function nextImage() {
+            changeImage(1)
+        }
+        function previousImage() {
+            changeImage(-1)
+        }
 
-<script>
-document.getElementById('upload').addEventListener('change', handleImageUpload);
+        function changeImage(offset) {
 
-function handleImageUpload(event) {
-    const file = event.target.files[0];
-    if (!file) return;
+            let imagePreview = document.getElementById("preview");
+            let imageUrl = document.getElementById("image-url");
+            let images = JSON.parse(sessionStorage.getItem("images"));
+            let current = document.getElementById("current-image");
+            let total = document.getElementById("total-images");
 
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        const img = new Image();
-        img.onload = function() {
-            const canvas = document.getElementById('canvas');
-            const ctx = canvas.getContext('2d');
-            canvas.width = img.width;
-            canvas.height = img.height;
-            ctx.drawImage(img, 0, 0);
-            const dataURL = canvas.toDataURL('image/png');
-            const downloadLink = document.getElementById('downloadLink');
-            downloadLink.href = dataURL;
-        };
-        img.src = e.target.result;
-    };
-    reader.readAsDataURL(file);
-}
-</script>
+            const newIndex = Number(current.textContent) + offset;
+            if (!(0 < newIndex && newIndex <= total.textContent)) return;
+            current.textContent = newIndex;
+            imagePreview.src = images[newIndex - 1].url;
+            imageUrl.href = images[newIndex - 1].url;
+        }
+    </script>
+    <script type="module">
+        import ImageThreadpool from "./image_threadpool.js";
+        
+        document.imageThreadpool = new ImageThreadpool();
 
+        function handleImageUpload() {
+            const files = document.getElementById("upload").files
+            if (!files) return;
+            for (const file of files) {
+                const reader = new FileReader();
+                reader.onload = function (event) {
+                    const format = document.getElementById("formats").selectedOptions[0].value;
+                    document.imageThreadpool.addTask({file: file, newFormat: format})
+                }
+                reader.readAsArrayBuffer(file);
+            }
+        }
+
+        document.handleImageUpload = handleImageUpload
+    </script>
+</body>
+</html>
